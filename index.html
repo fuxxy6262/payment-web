@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment Simple by Fuxxy</title>
+  <style>
+    :root {
+      --bg: #0b0b11;
+      --bg-2: #0f0f18;
+      --primary: #8a2be2;
+      --primary-2: #b966ff;
+      --text: #ffffff;
+      --muted: #a5a5b3;
+      --ok: #00d084;
+      --danger: #ff4d6d;
+      --card: #11111a;
+      --shadow: rgba(138,43,226,.35);
+      --ring: rgba(185,102,255,.55);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(185,102,255,.15), transparent 60%),
+                 radial-gradient(800px 500px at -10% 20%, rgba(138,43,226,.18), transparent 60%),
+                 var(--bg);
+      color: var(--text);
+      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial;
+      line-height: 1.6;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+    header {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: blur(8px);
+      background: linear-gradient(180deg, rgba(11,11,17,.9), rgba(11,11,17,.35) 70%, transparent);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 0;
+    }
+    .brand { font-weight: 800; font-size: 18px; }
+    .badge {
+      font-size: 11px; padding: 4px 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px; color: var(--muted);
+    }
+
+    .hero {
+      display: grid; grid-template-columns: 1.1fr .9fr;
+      align-items: center; gap: 40px;
+      padding: 60px 0 40px; min-height: 80vh;
+    }
+    .hero h1 { font-size: clamp(32px, 4.5vw, 48px); margin: 0 0 16px; font-weight: 800; }
+    .hero p { color: var(--muted); margin: 0 0 28px; font-size: 16px; }
+
+    .cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 24px; border-radius: 12px;
+      background: linear-gradient(180deg, rgba(185,102,255,.16), rgba(185,102,255,.06));
+      border: 1px solid rgba(255,255,255,.12);
+      font-weight: 700; font-size: 15px; cursor: pointer;
+    }
+
+    .section { padding: 60px 0; }
+    .section h2 { font-size: clamp(26px, 3.5vw, 36px); margin: 0 0 24px; font-weight: 800; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .card {
+      background: linear-gradient(180deg, rgba(17,17,26,.85), rgba(17,17,26,.6));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px; padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    }
+    .card h3 { margin: 0 0 12px; font-size: 18px; font-weight: 700; }
+
+    .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .pill {
+      padding: 6px 12px; border-radius: 10px;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+      font-size: 12px; font-weight: 500;
+    }
+
+    .copy-btn, .zoom-btn {
+      padding: 8px 12px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      cursor: pointer; font-weight: 600; font-size: 13px;
+    }
+
+    .acct { display: grid; gap: 8px; }
+    .acct .label { font-size: 12px; color: var(--muted); }
+    .acct .value { font-size: 20px; font-weight: 800; }
+    .acct .name { font-size: 13px; color: var(--muted); }
+
+    .qris-thumb { width: 100%; border-radius: 14px; padding: 20px; background: rgba(255,255,255,.03); }
+    .qris-thumb img { width: 100%; max-height: 280px; object-fit: contain; }
+
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+    .overlay.active { display: flex; }
+    .modal { width: min(500px, 96vw); background: var(--card); border-radius: 16px; overflow: hidden; }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .modal-body { padding: 20px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; padding: 16px 20px; }
+
+    .btn { padding: 10px 16px; border-radius: 12px; font-weight: 600; cursor: pointer; }
+    .btn.primary { background: linear-gradient(180deg, rgba(185,102,255,.22), rgba(185,102,255,.1)); border: 1px solid rgba(185,102,255,.55); }
+
+    .toast {
+      position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+      padding: 12px 20px; border-radius: 12px; background: rgba(185,102,255,.14);
+      border: 1px solid rgba(185,102,255,.5); font-weight: 600; font-size: 14px;
+      opacity: 0; transition: all .25s ease; z-index: 200;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="nav">
+        <div class="brand">Payment <span class="badge">fast response</span></div>
+        <a href="#pay" class="cta" id="toPayments">Continue to Payments ▶</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero" id="hero">
+      <div class="hero-content">
+        <h1>Pembayaran cepat, aman, gampang</h1>
+        <p>Pilih metode pembayaran di bawah ini, lalu kirim bukti transfer ke WhatsApp admin.</p>
+        <button class="cta" id="ctaStart">Continue to Payments ▶</button>
+      </div>
+      <div class="pfp-wrap">
+        <div class="pfp">
+          <img src="https://ibb.co.com/HLsmkkyH/280" alt="Logo" />
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="pay">
+      <h2>Metode Pembayaran</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>DANA</h3>
+          <div class="row"><span class="pill">Instant • 24/7</span><button class="copy-btn" data-number="081218107869">Salin</button></div>
+          <div class="acct">
+            <div class="label">Nomor</div>
+            <div class="value">0812 1810 7869</div>
+            <div class="name">A/N : S***o T***o B***o</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>GoPay</h3>
+          <div class="row"><span class="pill">Instant • 24/7</span><button class="copy-btn" data-number="085555555555">Salin</button></div>
+          <div class="acct">
+            <div class="label">Nomor</div>
+            <div class="value">0812 1810 7869</div>
+            <div class="name">A/N : Fuxxy</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>QRIS</h3>
+          <div class="row"><span class="pill">Semua e-Wallet & Bank</span><button class="zoom-btn" id="openQris">Perbesar</button></div>
+          <div class="acct">
+            <div class="label">Atas Nama</div>
+            <div class="name">Toko Fuxxy</div>
+          </div>
+          <div class="qris-thumb">
+            <img id="qrisImg" src="https://ibb.co.com/rjF3dKm/200x200" alt="QRIS">
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer>Payment Simple by Fuxxy • © <span id="y"></span></footer>
+  </main>
+
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="modal-head">
+        <strong>QRIS • a.n. Toko Fuxxy</strong>
+        <button class="btn ghost" id="closeModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <img id="qrisBig" src="https://ibb.co.com/rjF3dKm/300" alt="QRIS Besar" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="waQris">Kirim via WhatsApp</button>
+        <button class="btn primary" id="closeModal2">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">disalin</div>
+
+  <script>
+    const $ = (s,r=document)=>r.querySelector(s);
+    const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+
+    const toast=(msg="disalin")=>{
+      const el=$('#toast'); el.textContent=msg; el.classList.add('show');
+      setTimeout(()=>el.classList.remove('show'),1600);
+    };
+
+    $$('.copy-btn').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const number=btn.getAttribute('data-number');
+      try{await navigator.clipboard.writeText(number);toast('nomor disalin');}
+      catch{toast('gagal menyalin');}
+    }));
+
+    const overlay=$('#overlay');
+    const openQris=()=>overlay.classList.add('active');
+    const closeQris=()=>overlay.classList.remove('active');
+    $('#openQris').addEventListener('click',openQris);
+    $('#closeModal').addEventListener('click',closeQris);
+    $('#closeModal2').addEventListener('click',closeQris);
+    overlay.addEventListener('click',e=>{if(e.target===overlay)closeQris();});
+
+    $('#waQris').addEventListener('click',()=>{
+      const adminNumber="6281234567890"; // ganti nomor WA
+      const message="Halo Admin, saya sudah transfer via QRIS. Berikut bukti pembayaran saya.";
+      window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`,"_blank");
+    });
+
+    $('#y').textContent=new Date().getFullYear();
+  </script>
+</body>
+</html>
